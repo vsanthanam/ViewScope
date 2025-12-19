@@ -236,12 +236,13 @@ public struct ViewScope {
         tasks.append(task)
     }
 
-    private func enqueue(
+    private mutating func enqueue(
         _ task: Task<Void, Never>,
         with id: some Hashable
     ) {
         guard bindCount > 0 else { return }
         keyed[id]?.cancel()
+        keyed[id] = task
     }
 
     private mutating func flush() {
