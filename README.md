@@ -50,7 +50,7 @@ struct MyView: View {
         Text("Async Work Available")
             .scope($myScope)
         Button("Do Something Async") {
-            scope.task {
+            myScope.task {
                 // Await stuff here. Tasks will be cancelled the `Text` above disappears.
             }
         }
