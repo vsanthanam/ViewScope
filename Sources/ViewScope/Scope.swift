@@ -29,7 +29,7 @@ import SwiftUI
 ///
 /// Use the property wrapper to create a new ``ViewScope``.
 ///
-/// You can then attach the scope to the visibility lifecycle of a view using the ``SwiftUICore/View/appearanceScope(_:)`` modifier, and you and assign with to the scope using the the various `.task` methods on the scope
+/// You can then attach the scope to the visibility lifecycle of a view using the ``SwiftUICore/View/scope(_:)`` modifier, and you and assign with to the scope using the the various `.task` methods on the scope
 ///
 /// For example:
 ///
@@ -44,7 +44,7 @@ import SwiftUI
 ///                 // await something
 ///             }
 ///         }
-///         .appearanceScope($myScope)
+///         .scope($myScope)
 ///     }
 ///
 /// }

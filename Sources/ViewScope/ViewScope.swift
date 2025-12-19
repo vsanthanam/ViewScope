@@ -45,7 +45,7 @@ import SwiftUI
 ///
 /// ViewScopes must be bound to the visibility lifecycle of one or more SwiftUI views.
 ///
-/// You can do this using the ``SwiftUICore/View/appearanceScope(_:)`` view modifier.
+/// You can do this using the ``SwiftUICore/View/scope(_:)`` view modifier.
 ///
 /// For example:
 ///
@@ -56,7 +56,7 @@ import SwiftUI
 ///
 ///     var body: some View {
 ///         Text("View")
-///             .appearanceScope($myScope)
+///             .scope($myScope)
 ///     }
 ///
 /// }
@@ -74,7 +74,7 @@ import SwiftUI
 ///
 ///     var body: some View {
 ///         Text("Async Work Available")
-///             .appearanceScope($myScope)
+///             .scope($myScope)
 ///         Button("Do Something Async") {
 ///             scope.task {
 ///                 // Await stuff here.

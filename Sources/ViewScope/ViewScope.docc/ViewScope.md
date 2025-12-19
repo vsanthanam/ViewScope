@@ -8,4 +8,4 @@ Imperactive, cancellable asynchronous contexts in SwiftUI
 
 - ``ViewScope``
 - ``Scope``
-- ``SwiftUICore/View/appearanceScope(_:)``
+- ``SwiftUICore/View/scope(_:)``

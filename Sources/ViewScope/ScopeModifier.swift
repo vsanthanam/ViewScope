@@ -1,5 +1,5 @@
 // ViewScope
-// AppearanceScopeModifier.swift
+// ScopeModifier.swift
 //
 // MIT License
 //
@@ -39,7 +39,7 @@ extension View {
     ///
     ///     var body: Some View {
     ///         SomeOtherView()
-    ///             .appearanceScope($myScope)
+    ///             .scope($myScope)
     ///             // Tasks assigned to scope binding will cancel themselves when `myContent` disappears.
     ///     }
     ///
@@ -48,7 +48,7 @@ extension View {
     ///
     /// - Parameter scope: The scope to manage
     /// - Returns: The modified view
-    public func appearanceScope(
+    public func scope(
         _ scope: Binding<ViewScope>
     ) -> some View {
         let modifier = ScopeModifier(scope)
