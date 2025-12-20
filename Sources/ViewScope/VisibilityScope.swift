@@ -89,7 +89,7 @@ import SwiftUI
 /// ### Preventing Duplicate Tasks
 ///
 /// Tasks scoped to a `VisibilityScope` can attached with an optional ID.
-/// The behavior is similar to using SwiftUI's built-in `.task` modifier with an ID: when a new task with the same ID as previously known task is started, the previous task with that is is cancelled first.
+/// The behavior is similar to using SwiftUI's built-in `.task` modifier with an `id` argument — when a new task with the same ID as previously known task is sttached, the previous task with that ID is is cancelled before the new one starts.
 @available(macOS 15.0, macCatalyst 18.0, iOS 18.0, watchOS 11.0, tvOS 18.0, visionOS 2.0, *)
 public struct VisibilityScope {
 

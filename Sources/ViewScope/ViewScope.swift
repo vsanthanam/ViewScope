@@ -29,7 +29,7 @@ import SwiftUI
 ///
 /// Use this property wrapper to create a new ``VisibilityScope``.
 ///
-/// You can then attach the scope to the visibility lifecycle of a view using the ``SwiftUICore/View/whileVisible(_:)`` modifier, and you and assign with to the scope using the the various `.task` methods on the scope
+/// You can then attach the scope to the visibility lifecycle of a view using the ``SwiftUICore/View/whileVisible(_:)`` modifier, and you and assign tasks to the scope using the the various `.task` methods on the scope
 ///
 /// For example:
 ///
