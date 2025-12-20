@@ -3,7 +3,7 @@
 [![MIT License](https://img.shields.io/github/license/vsanthanam/ViewScope)](https://github.com/vsanthanam/ViewScope/blob/main/LICENSE)
 [![GitHub Release](https://img.shields.io/github/v/release/vsanthanam/ViewScope?include_prereleases)](https://github.com/vsanthanam/ViewScope/releases)
 [![Build Status](https://img.shields.io/github/check-runs/vsanthanam/ViewScope/main)](https://github.com/vsanthanam/ViewScope/actions)
-[![Swift Version](https://img.shields.io/badge/swift-6.1-critical)](https://swift.org)
+[![Swift Version](https://img.shields.io/badge/swift-6.2-critical)](https://swift.org)
 [![Documentation](https://img.shields.io/badge/Documentation-GitHub-8A2BE2)](https://www.viewsco.pe/docs/documentation/viewscope)
 
 ## Overview
