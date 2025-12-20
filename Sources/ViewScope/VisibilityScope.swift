@@ -85,11 +85,21 @@ import SwiftUI
 ///
 /// }
 /// ```
+///
+/// ### Preventing Duplicate Tasks
+///
+/// Tasks scoped to a `VisibilityScope` can attached with an optional ID.
+/// The behavior is similar to using SwiftUI's built-in `.task` modifier with an ID: when a new task with the same ID as previously known task is started, the previous task with that is is cancelled first.
 @available(macOS 15.0, macCatalyst 18.0, iOS 18.0, watchOS 11.0, tvOS 18.0, visionOS 2.0, *)
 public struct VisibilityScope {
 
     // MARK: - API
 
+    /// Attach a task to the scope
+    /// - Parameters:
+    ///   - name: Human readable name of the task.
+    ///   - priority: The priority of the operation task.
+    ///   - operation: The operation to perform.
     public mutating func task(
         name: String? = nil,
         priority: TaskPriority? = nil,
@@ -98,6 +108,12 @@ public struct VisibilityScope {
         enqueue(Task(name: name, priority: priority, operation: operation))
     }
 
+    /// Attach a uniquely identified task to the scope
+    /// - Parameters:
+    ///   - id: A uniqueness identifier. New tasks provided with this identifier will cancel this one.
+    ///   - name: Human readable name of the task.
+    ///   - priority: The priority of the operation task.
+    ///   - operation: The operation to perform.
     public mutating func task(
         id: some Hashable,
         name: String? = nil,
@@ -108,6 +124,14 @@ public struct VisibilityScope {
         enqueue(Task(name: name, priority: priority, operation: operation), with: id)
     }
 
+    /// Attach a task to the scope
+    /// - Parameters:
+    ///   - name: Human readable name of the task.
+    ///   - taskExecutor: The task executor that the child task should be started on and keep using.
+    ///   Explicitly passing `nil` as the executor preference is equivalent to no preference, and effectively means to inherit the outer context’s executor preference.
+    ///   You can also pass the `globalConcurrentExecutor` global executor explicitly.
+    ///   - priority: The priority of the operation task.
+    ///   - operation: The operation to perform.
     public mutating func task(
         name: String? = nil,
         executorPreference taskExecutor: (any TaskExecutor)?,
@@ -117,6 +141,15 @@ public struct VisibilityScope {
         enqueue(Task(name: name, executorPreference: taskExecutor, priority: priority, operation: operation))
     }
 
+    /// Attach a uniquely identified task to the scope
+    /// - Parameters:
+    ///   - id: A uniqueness identifier. New tasks provided with this identifier will cancel this one.
+    ///   - name: Human readable name of the task.
+    ///   - taskExecutor: The task executor that the child task should be started on and keep using.
+    ///   Explicitly passing `nil` as the executor preference is equivalent to no preference, and effectively means to inherit the outer context’s executor preference.
+    ///   You can also pass the `globalConcurrentExecutor` global executor explicitly.
+    ///   - priority: The priority of the operation task.
+    ///   - operation: The operation to perform.
     public mutating func task(
         id: some Hashable,
         name: String? = nil,
@@ -127,6 +160,11 @@ public struct VisibilityScope {
         enqueue(Task(name: name, executorPreference: taskExecutor, priority: priority, operation: operation), with: id)
     }
 
+    /// Attach a detached task to the scope
+    /// - Parameters:
+    ///   - name: Human readable name of the task.
+    ///   - priority: The priority of the operation task.
+    ///   - operation: The operation to perform.
     public mutating func detachedTask(
         name: String? = nil,
         priority: TaskPriority? = nil,
@@ -135,6 +173,14 @@ public struct VisibilityScope {
         enqueue(Task.detached(name: name, priority: priority, operation: operation))
     }
 
+    /// Attached a detached task to the scope
+    /// - Parameters:
+    ///   - name: Human readable name of the task.
+    ///   - taskExecutor: The task executor that the child task should be started on and keep using.
+    ///   Explicitly passing `nil` as the executor preference is equivalent to no preference, and effectively means to inherit the outer context’s executor preference.
+    ///   You can also pass the `globalConcurrentExecutor` global executor explicitly.
+    ///   - priority: The priority of the operation task.
+    ///   - operation: The operation to perform.
     public mutating func detachedTask(
         name: String? = nil,
         executorPreference taskExecutor: (any TaskExecutor)?,
@@ -144,6 +190,12 @@ public struct VisibilityScope {
         enqueue(Task.detached(name: name, executorPreference: taskExecutor, priority: priority, operation: operation))
     }
 
+    /// Attach a uniquely identified detached task to the scope
+    /// - Parameters:
+    ///   - id: A uniqueness identifier. New tasks provided with this identifier will cancel this one.
+    ///   - name: Human readable name of the task.
+    ///   - priority: The priority of the operation task.
+    ///   - operation: The operation to perform.
     public mutating func detachedTask(
         id: some Hashable,
         name: String? = nil,
@@ -153,6 +205,15 @@ public struct VisibilityScope {
         enqueue(Task.detached(name: name, priority: priority, operation: operation), with: id)
     }
 
+    /// Attached a uniquely identified detached task to the scope
+    /// - Parameters:
+    ///   - id: A uniqueness identifier. New tasks provided with this identifier will cancel this one.
+    ///   - name: Human readable name of the task.
+    ///   - taskExecutor: The task executor that the child task should be started on and keep using.
+    ///   Explicitly passing `nil` as the executor preference is equivalent to no preference, and effectively means to inherit the outer context’s executor preference.
+    ///   You can also pass the `globalConcurrentExecutor` global executor explicitly.
+    ///   - priority: The priority of the operation task.
+    ///   - operation: The operation to perform.
     public mutating func detachedTask(
         id: some Hashable,
         name: String? = nil,
@@ -163,6 +224,14 @@ public struct VisibilityScope {
         enqueue(Task.detached(name: name, executorPreference: taskExecutor, priority: priority, operation: operation), with: id)
     }
 
+    /// Attach an immediate task to the scope
+    /// - Parameters:
+    ///   - name: The high-level human-readable name given for this task.
+    ///   - priority: The priority of the task. Pass nil to use the `basePriority` of the current task (if there is one).
+    ///   - taskExecutor: The task executor that the child task should be started on and keep using.
+    ///   Explicitly passing `nil` as the executor preference is equivalent to no preference, and effectively means to inherit the outer context’s executor preference.
+    ///   You can also pass the `globalConcurrentExecutor` global executor explicitly.
+    ///   - operation: The operation to perform.
     @available(macOS 26.0, macCatalyst 26.0, iOS 26.0, watchOS 26.0, tvOS 26.0, visionOS 26.0, *)
     public mutating func immediateTask(
         name: String? = nil,
@@ -173,6 +242,15 @@ public struct VisibilityScope {
         enqueue(Task.immediate(name: name, priority: priority, executorPreference: taskExecutor, operation: operation))
     }
 
+    /// Attach a unquely identified immediate task to the scope
+    /// - Parameters:
+    ///   - id: A uniqueness identifier. New tasks provided with this identifier will cancel this one.
+    ///   - name: The high-level human-readable name given for this task.
+    ///   - priority: The priority of the task. Pass nil to use the `basePriority` of the current task (if there is one).
+    ///   - taskExecutor: The task executor that the child task should be started on and keep using.
+    ///   Explicitly passing `nil` as the executor preference is equivalent to no preference, and effectively means to inherit the outer context’s executor preference.
+    ///   You can also pass the `globalConcurrentExecutor` global executor explicitly.
+    ///   - operation: The operation to perform.
     @available(macOS 26.0, macCatalyst 26.0, iOS 26.0, watchOS 26.0, tvOS 26.0, visionOS 26.0, *)
     public mutating func immediateTask(
         id: some Hashable,
@@ -184,6 +262,14 @@ public struct VisibilityScope {
         enqueue(Task.immediate(name: name, priority: priority, executorPreference: taskExecutor, operation: operation), with: id)
     }
 
+    /// Attach an immediate detached task to the scope
+    /// - Parameters:
+    ///   - name: The high-level human-readable name given for this task.
+    ///   - priority: The priority of the task. Pass nil to use the `basePriority` of the current task (if there is one).
+    ///   - taskExecutor: The task executor that the child task should be started on and keep using.
+    ///   Explicitly passing `nil` as the executor preference is equivalent to no preference, and effectively means to inherit the outer context’s executor preference.
+    ///   You can also pass the `globalConcurrentExecutor` global executor explicitly.
+    ///   - operation: The operation to perform.
     @available(macOS 26.0, macCatalyst 26.0, iOS 26.0, watchOS 26.0, tvOS 26.0, visionOS 26.0, *)
     public mutating func immediateDetachedTask(
         name: String? = nil,
@@ -194,6 +280,15 @@ public struct VisibilityScope {
         enqueue(Task.immediateDetached(name: name, priority: priority, executorPreference: taskExecutor, operation: operation))
     }
 
+    /// Attach a unquely identified immediate detached task to the scope
+    /// - Parameters:
+    ///   - id: A uniqueness identifier. New tasks provided with this identifier will cancel this one.
+    ///   - name: The high-level human-readable name given for this task.
+    ///   - priority: The priority of the task. Pass nil to use the `basePriority` of the current task (if there is one).
+    ///   - taskExecutor: The task executor that the child task should be started on and keep using.
+    ///   Explicitly passing `nil` as the executor preference is equivalent to no preference, and effectively means to inherit the outer context’s executor preference.
+    ///   You can also pass the `globalConcurrentExecutor` global executor explicitly.
+    ///   - operation: The operation to perform.
     @available(macOS 26.0, macCatalyst 26.0, iOS 26.0, watchOS 26.0, tvOS 26.0, visionOS 26.0, *)
     public mutating func immediateDetachedTask(
         id: some Hashable,
