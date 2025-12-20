@@ -1,60 +1,67 @@
 # ViewScope
 
-A view scope is a type that provides an async context that is cancelled based on the visibilty lifecycle of one or more views attached views.
+## Overview
 
-You do not create instances of this type yourself.
-
-Instead, use the provided ``Scope`` SwiftUI property wrapper, which creates a new, unbound scope.
+ViewScope is a library that lets you create structured, SwiftUI-friendly async contexts for imperative asynchronous work, such as making a network request when a user taps on a button. It allows you to scope this work to a specific node in the SwiftUI view hiearchy and prevents you from needing to rely on unstructured concurrency to manage task cancellation.
 
 For example:
 
 ```swift
-struct MyView: View {
+import ViewScope
 
-    @Scope var myScope
+struct MyScreen: View {
 
-    var body: some View { ... }
-
-}
-```
-
-ViewScopes must be bound to the visibility lifecycle of one or more SwiftUI views.
-You can do this using the ``SwiftUICore/View/scope(_:)`` view modifier.
-
-For example:
-
-```swift
-struct MyView: View {
-
-    @Scope var myScope
-
+    @ViewScope myScope
+    
     var body: some View {
-        Text("View")
-            .scope($myScope)
-    }
-
-}
-```
-
-When none of the bound views are visible, any tasks managed by the scope are cancelled.
-Tasks that are added to the scope when no attached views is visible are ignored.
-
-You can attach tasks to the scope using one of several available `.task` instance methods, which mimic Apple's own `Task` API:
-
-```swift
-struct MyView: View {
-
-    @Scope var myScope
-
-    var body: some View {
-        Text("Async Work Available")
-            .scope($myScope)
-        Button("Do Something Async") {
-            myScope.task {
-                // Await stuff here. Tasks will be cancelled the `Text` above disappears.
+        VStack {
+            Text("This screen can produce async side effects that need to be cancelled if it ever disappears, for example if the user interacts with a deeplink or dismisses a sheet presentation with a swipe")
+            Button("Make Network Request") {
+                myScope.task {
+                    await makeNetworkRequest()
+                }
             }
         }
+        .whileVisible($myScope)
+    }
+
+    func makeNetworkRequest() async {
+        // Await things here
     }
 
 }
 ```
+
+## Installation
+
+ViewScope currently distributed exclusively through the [Swift Package Manager](https://www.swift.org/package-manager/). 
+
+To add ViewScope as a dependency to an existing Swift package, add the following line of code to the `dependencies` parameter of your `Package.swift` file:
+
+```swift
+dependencies: [
+    .package(url: "https://github.com/vsanthanam/ViewScope.git", from: "1.0.0")
+]
+```
+
+To add SafariUI as a dependency to an Xcode Project: 
+
+- Choose `File` → `Add Packages...`
+- Enter package URL `https://github.com/vsanthanam/ViewScope.git` and select your release and of choice.
+
+Other distribution mechanisms like CocoaPods or Carthage may be added in the future.
+
+## Usage & Documentation
+
+ViewScope's documentation is built with [DocC](https://developer.apple.com/documentation/docc) and included in the repository as a DocC archive. The latest version is hosted on [GitHub Pages](https://pages.github.com) and is available [here](https://www.viewsco.pe/docs/documentation/viewscope)).
+
+Additional installation instructions are available on the [Swift Package Index](https://swiftpackageindex.com/vsanthanam/ViewScope)
+
+[![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fvsanthanam%2FSafariUI%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/vsanthanam/ViewScope)
+[![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fvsanthanam%2FViewScope%2Fbadge%3Ftype%3Dplatforms)](https://swiftpackageindex.com/vsanthanam/ViewScope)
+
+Explore [the documentation](https://www.viewsco.pe/docs/documentation/viewscope) for more details.
+
+## License
+
+**SafariUI** is available under the [MIT license](https://en.wikipedia.org/wiki/MIT_License). See the [LICENSE](https://github.com/vsanthanam/ViewScope/blob/main/LICENSE) file for more information.

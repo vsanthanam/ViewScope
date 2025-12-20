@@ -1,4 +1,4 @@
-# ``/ViewScope/ViewScope``
+# ``VisibilityScope``
 
 ## Topics
 

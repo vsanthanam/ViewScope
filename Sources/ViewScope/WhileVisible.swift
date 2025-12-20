@@ -1,5 +1,5 @@
 // ViewScope
-// ScopeModifier.swift
+// WhileVisible.swift
 //
 // MIT License
 //
@@ -39,8 +39,8 @@ extension View {
     ///
     ///     var body: Some View {
     ///         SomeOtherView()
-    ///             .scope($myScope)
-    ///             // Tasks assigned to scope binding will cancel themselves when `SomeOtherView` disappears.
+    ///             .whileVisible($myScope)
+    ///             // Tasks assigned to the provided scope binding will cancel themselves when `SomeOtherView` disappears.
     ///     }
     ///
     /// }
@@ -48,10 +48,10 @@ extension View {
     ///
     /// - Parameter scope: The scope to manage
     /// - Returns: The modified view
-    public func scope(
-        _ scope: Binding<ViewScope>
+    public func whileVisible(
+        _ scope: Binding<VisibilityScope>
     ) -> some View {
-        let modifier = ScopeModifier(scope)
+        let modifier = WhileVisible(scope)
         return ModifiedContent(
             content: self,
             modifier: modifier
@@ -61,11 +61,11 @@ extension View {
 }
 
 @available(macOS 15.0, macCatalyst 18.0, iOS 18.0, watchOS 11.0, tvOS 18.0, visionOS 2.0, *)
-private struct ScopeModifier: ViewModifier {
+private struct WhileVisible: ViewModifier {
 
     // MARK: - Initializers
 
-    init(_ scope: Binding<ViewScope>) {
+    init(_ scope: Binding<VisibilityScope>) {
         _scope = scope
     }
 
@@ -84,6 +84,6 @@ private struct ScopeModifier: ViewModifier {
     // MARK: - Private
 
     @Binding
-    private var scope: ViewScope
+    private var scope: VisibilityScope
 
 }
