@@ -1,0 +1,9 @@
+#!/bin/bash
+
+swift package --allow-writing-to-directory docs \
+    generate-documentation \
+    --product ViewScope \
+    --disable-indexing \
+    --transform-for-static-hosting \
+    --hosting-base-path docs \
+    --output-path docs

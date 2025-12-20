@@ -19,6 +19,16 @@ let package = Package(
             targets: ["ViewScope"]
         )
     ],
+    dependencies: [
+        .package(
+            url: "https://github.com/swiftlang/swift-docc-plugin.git",
+            exact: "1.4.5"
+        ),
+        .package(
+            url: "https://github.com/nicklockwood/SwiftFormat.git",
+            exact: "0.58.7"
+        )
+    ],
     targets: [
         .target(
             name: "ViewScope",
