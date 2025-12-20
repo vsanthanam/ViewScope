@@ -1,0 +1,118 @@
+name: ViewScope CI
+permissions:
+  contents: read
+  pull-requests: write
+
+on:
+  push:
+    branches:
+      - "main"
+      - "*release*"
+  pull_request:
+    branches:
+      - "main"
+      - "*release*"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  swiftformat:
+    name: Run SwiftFormat
+    runs-on: macos-26
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Select Xcode Version
+        run: ./.scripts/xcode-select
+      - name: Lint with SwiftFormat
+        run: ./.scripts/lint-swiftformat
+  
+  lint-docc:
+    name: Validate Documentation
+    runs-on: macos-26
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Select Xcode Version
+        run: ./.scripts/xcode-select
+      - name: Validate Documentation
+        run: ./.scripts/lint-docc
+
+  build-macos-spm:
+    name: Build ViewScope (macOS)
+    strategy:
+      fail-fast: false
+      matrix:
+        swift: ["6.2"]
+        include:
+          - swift: "6.2"
+            runner: "macos-26"
+            xcode: "26.1"
+    runs-on: ${{ matrix.runner }}
+    outputs:
+      artifact-name: macos-build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Select Xcode Version
+        run: ./.scripts/xcode-select ${{ matrix.xcode }}
+      - name: Build ViewScope
+        run: swift build -v --build-tests --build-path .build
+      - name: Compress Build
+        run: zip -r build.zip .build
+      - name: Upload Build
+        uses: actions/upload-artifact@v6
+        with:
+          name: macos-build-${{ matrix.swift }}
+          path: build.zip
+
+  test-macos-spm:
+    name: Test ViewScope (macOS)
+    strategy:
+      fail-fast: false
+      matrix:
+        swift: ["6.2"]
+        include:
+          - swift: "6.2"
+            runner: "macos-26"
+            xcode: "26.1"
+    needs: build-macos-spm
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Xcode Version
+        run: ./.scripts/xcode-select ${{ matrix.xcode }}
+      - name: Download Build
+        uses: actions/download-artifact@v7
+        with:
+          name: macos-build-${{ matrix.swift }}
+          path: .
+      - name: Decompress Build
+        run: unzip build.zip
+      - name: Test ViewScope
+        run: swift test --skip-build
+
+  validate-pr:
+    name: Validate Pull Request
+    if: ${{ always() && github.event_name == 'pull_request' }}
+    needs:
+      - build-macos-spm
+      - test-macos-spm
+      - swiftformat
+      - lint-docc
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check upstream jobs
+        run: |
+          if [[ "${{ needs.build-macos-spm.result }}" == "failure" ]] || \
+            [[ "${{ needs.test-macos-spm.result }}" == "failure" ]] || \
+            [[ "${{ needs.swiftformat.result }}" == "failure" ]] || \
+            [[ "${{ needs.lint-docc.result }}" == "failure" ]]; then
+            echo "❌ Required job failed."
+            exit 1
+          else
+            echo "✅ All required jobs completed successfully."
+          fi
