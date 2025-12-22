@@ -40,7 +40,7 @@ extension View {
     ///     var body: Some View {
     ///         SomeOtherView()
     ///             .whileVisible($myScope)
-    ///             // Tasks assigned to the provided scope binding will cancel themselves when `SomeOtherView` disappears.
+    ///             // Tasks assigned to `myScope` will cancel themselves when `SomeOtherView` disappears.
     ///     }
     ///
     /// }
