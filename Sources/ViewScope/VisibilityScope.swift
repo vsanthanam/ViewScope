@@ -103,6 +103,7 @@ public struct VisibilityScope {
         priority: TaskPriority = .userInitiated,
         operation: sending @escaping @isolated(any) () async -> Void
     ) {
+        guard bindCount > 0 else { return }
         enqueue(Task(priority: priority, operation: operation))
     }
 
@@ -132,6 +133,7 @@ public struct VisibilityScope {
         priority: TaskPriority = .userInitiated,
         operation: sending @escaping () async -> Void
     ) {
+        guard bindCount > 0 else { return }
         enqueue(Task(executorPreference: taskExecutor, priority: priority, operation: operation))
     }
 
@@ -149,6 +151,7 @@ public struct VisibilityScope {
         priority: TaskPriority = .userInitiated,
         operation: sending @escaping () async -> Void
     ) {
+        guard bindCount > 0 else { return }
         enqueue(Task(executorPreference: taskExecutor, priority: priority, operation: operation), with: id)
     }
 
@@ -179,7 +182,6 @@ public struct VisibilityScope {
     private mutating func enqueue(
         _ task: Task<Void, Never>
     ) {
-        guard bindCount > 0 else { return }
         tasks.append(task)
     }
 
@@ -187,7 +189,6 @@ public struct VisibilityScope {
         _ task: Task<Void, Never>,
         with id: some Hashable
     ) {
-        guard bindCount > 0 else { return }
         keyed[id]?.cancel()
         keyed[id] = task
     }
