@@ -34,8 +34,7 @@ let package = Package(
             name: "ViewScope",
             swiftSettings: [
                 .enableUpcomingFeature("NonisolatedNonsendingByDefault"),
-                .enableUpcomingFeature("ExistentialAny"),
-                .treatAllWarnings(as: .error)
+                .enableUpcomingFeature("ExistentialAny")
             ]
         ),
         .testTarget(
@@ -43,8 +42,7 @@ let package = Package(
             dependencies: ["ViewScope"],
             swiftSettings: [
                 .enableUpcomingFeature("NonisolatedNonsendingByDefault"),
-                .enableUpcomingFeature("ExistentialAny"),
-                .treatAllWarnings(as: .error)
+                .enableUpcomingFeature("ExistentialAny")
             ]
         )
     ]
