@@ -45,11 +45,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        swift: ["6.2"]
+        swift: ["6.2", "6.3"]
         include:
           - swift: "6.2"
             runner: "macos-26"
-            xcode: "26.1"
+            xcode: "26.4.1"
+          - swift: "6.3"
+            runner: "macos-26"
+            xcode: "26.4.1"
     runs-on: ${{ matrix.runner }}
     outputs:
       artifact-name: macos-build
@@ -73,11 +76,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        swift: ["6.2"]
+        swift: ["6.2", "6.3"]
         include:
           - swift: "6.2"
             runner: "macos-26"
-            xcode: "26.1"
+            xcode: "26.4.1"
+          - swift: "6.3"
+            runner: "macos-26"
+            xcode: "26.4.1"
     needs: build-macos-spm
     runs-on: ${{ matrix.runner }}
     steps:
