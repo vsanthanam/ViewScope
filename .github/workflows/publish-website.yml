@@ -20,7 +20,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
       - name: Xcode Version
-        run: ./.scripts/xcode-select 26.4.1
+        run: ./.scripts/xcode-select 26.5
       - name: Build Documentation
         run: ./.scripts/build-static-docc
       - name: Compress Documentation
