@@ -46,7 +46,7 @@ To add ViewScope as a dependency to an existing Swift package, add the following
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/vsanthanam/ViewScope.git", from: "1.0.0")
+    .package(url: "https://github.com/vsanthanam/ViewScope.git", from: "1.2.1")
 ]
 ```
 
