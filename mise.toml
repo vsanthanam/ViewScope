@@ -1,0 +1,22 @@
+[tools]
+swiftformat = "0.63.0"
+
+[tasks.format]
+description = "Format Sources"
+run = "swiftformat ."
+
+[tasks.lint]
+description = "Lint Sources"
+run = "swiftformat . --lint"
+
+[tasks.build]
+description = "Build Calligraphy"
+run = "swift build"
+
+[tasks.test]
+description = "Test Calligraphy"
+run = "swift test"
+
+[tasks.preview-docs]
+description = "Preview Documentation"
+run = "swift package --disable-sandbox preview-documentation --product Calligraphy"
