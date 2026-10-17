@@ -13,14 +13,14 @@ concurrency:
 jobs:
   build-docc:
     name: Build Documentation
-    runs-on: macos-26
+    runs-on: xcode-27
     outputs:
       artifact-name: docs
     steps:
       - name: Checkout
         uses: actions/checkout@v6
       - name: Xcode Version
-        run: ./.scripts/xcode-select 26.5
+        run: ./.scripts/xcode-select 27.1
       - name: Build Documentation
         run: ./.scripts/build-static-docc
       - name: Compress Documentation

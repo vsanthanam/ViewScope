@@ -3,6 +3,12 @@
 
 import PackageDescription
 
+let swiftSettings: [SwiftSetting] = [
+    .enableUpcomingFeature("NonisolatedNonsendingByDefault"),
+    .enableUpcomingFeature("ExistentialAny"),
+    .enableUpcomingFeature("MemberImportVisibility")
+]
+
 let package = Package(
     name: "ViewScope",
     platforms: [
@@ -22,18 +28,12 @@ let package = Package(
     targets: [
         .target(
             name: "ViewScope",
-            swiftSettings: [
-                .enableUpcomingFeature("NonisolatedNonsendingByDefault"),
-                .enableUpcomingFeature("ExistentialAny")
-            ]
+            swiftSettings: swiftSettings
         ),
         .testTarget(
             name: "ViewScopeTests",
             dependencies: ["ViewScope"],
-            swiftSettings: [
-                .enableUpcomingFeature("NonisolatedNonsendingByDefault"),
-                .enableUpcomingFeature("ExistentialAny")
-            ]
+            swiftSettings: swiftSettings
         )
     ]
 )
