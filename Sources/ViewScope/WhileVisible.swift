@@ -30,32 +30,13 @@ extension View {
 
     /// Manage the tasks assigned to the provided scope based on the appearance lifecycle of the upstream view.
     ///
-    /// For example:
-    ///
-    /// ```swift
-    /// struct SomeView: View {
-    ///
-    ///     @Scope myScope
-    ///
-    ///     var body: Some View {
-    ///         SomeOtherView()
-    ///             .whileVisible($myScope)
-    ///             // Tasks assigned to `myScope` will cancel themselves when `SomeOtherView` disappears.
-    ///     }
-    ///
-    /// }
-    /// ```
-    ///
     /// - Parameter scope: The scope to manage
     /// - Returns: The modified view
+    @available(*, deprecated, renamed: "viewScope(_:)")
     public func whileVisible(
         _ scope: Binding<VisibilityScope>
     ) -> some View {
-        let modifier = WhileVisible(scope)
-        return ModifiedContent(
-            content: self,
-            modifier: modifier
-        )
+        viewScope(scope)
     }
 
 }
