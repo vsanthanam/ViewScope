@@ -1,4 +1,4 @@
-# ``VisibilityScope``
+# ``ViewScope/ViewScope``
 
 ## Topics
 

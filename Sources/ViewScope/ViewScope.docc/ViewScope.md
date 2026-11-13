@@ -75,17 +75,17 @@ struct RefreshButton: View {
 
 ### Managing a scope manually
 
-If you need more control, for example to bind a scope to a specific child view or to share one scope between several views, you can create a scope yourself with the ``ViewScope`` property wrapper and bind it with the ``SwiftUICore/View/viewScope(_:)`` modifier.
+If you need more control, for example to bind a scope to a specific child view or to share one scope between several views, you can create a scope yourself with the ``Scope`` property wrapper and bind it with the ``SwiftUICore/View/scope(to:)`` modifier.
 
 ```swift
 struct MyScreen: View {
 
-    @ViewScope var myScope
+    @Scope var myScope
 
     var body: some View {
         VStack {
             Text("Tasks are cancelled when this text disappears")
-                .viewScope($myScope)
+                .scope(to: $myScope)
             Button("Make Network Request") {
                 myScope.task {
                     await makeNetworkRequest()
@@ -109,10 +109,10 @@ struct MyScreen: View {
 
 ### Using Scopes
 
-- ``VisibilityScope``
+- ``ViewScope/ViewScope``
 - ``CurrentScope``
 
 ### Managing Scopes Manually
 
-- ``ViewScope``
-- ``SwiftUICore/View/viewScope(_:)``
+- ``Scope``
+- ``SwiftUICore/View/scope(to:)``
