@@ -29,6 +29,7 @@
     import os
 #endif
 
+@available(macOS 15.0, macCatalyst 18.0, iOS 18.0, watchOS 11.0, tvOS 18.0, visionOS 2.0, *)
 func runtimeIssue(
     _ message: @autoclosure () -> String,
     fileID: StaticString,
@@ -37,8 +38,8 @@ func runtimeIssue(
     #if DEBUG
         os_log(
             .fault,
-            dso: runtimeIssueDSO,
-            log: runtimeIssueLog,
+            dso: RuntimeIssue.dso,
+            log: RuntimeIssue.issueLog,
             "%{public}@",
             "\(message()) (\(fileID):\(line))"
         )
@@ -46,18 +47,21 @@ func runtimeIssue(
 }
 
 #if DEBUG
-    private let runtimeIssueLog = OSLog(
-        subsystem: "com.apple.runtime-issues",
-        category: "ViewScope"
-    )
+    @available(macOS 15.0, macCatalyst 18.0, iOS 18.0, watchOS 11.0, tvOS 18.0, visionOS 2.0, *)
+    private enum RuntimeIssue {
+        static let issueLog = OSLog(
+            subsystem: "com.apple.runtime-issues",
+            category: "ViewScope"
+        )
 
-    private nonisolated(unsafe) let runtimeIssueDSO: UnsafeRawPointer = {
-        for index in 0 ..< _dyld_image_count() {
-            guard let name = _dyld_get_image_name(index),
-                  String(cString: name).hasSuffix("/SwiftUI"),
-                  let header = _dyld_get_image_header(index) else { continue }
-            return UnsafeRawPointer(header)
-        }
-        return UnsafeRawPointer(#dsohandle)
-    }()
+        nonisolated(unsafe) static let dso: UnsafeRawPointer = {
+            for index in 0 ..< _dyld_image_count() {
+                guard let name = _dyld_get_image_name(index),
+                      String(cString: name).hasSuffix("/SwiftUI"),
+                      let header = _dyld_get_image_header(index) else { continue }
+                return UnsafeRawPointer(header)
+            }
+            return UnsafeRawPointer(#dsohandle)
+        }()
+    }
 #endif

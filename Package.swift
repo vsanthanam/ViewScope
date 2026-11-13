@@ -41,5 +41,6 @@ let package = Package(
             dependencies: ["ViewScope"],
             swiftSettings: swiftSettings
         )
-    ]
+    ],
+    swiftLanguageModes: [.v6]
 )

@@ -25,9 +25,9 @@
 
 import SwiftUI
 
-/// A SwiftUI view that creates a new `VisibilityScope` and manages it for you
+/// A SwiftUI view that creates a new `ViewScope` and manages it for you
 ///
-/// A scoped view is the recommended way to use a ``VisibilityScope``. It creates a new scope, binds the scope to its own visibility lifecycle, and makes the scope available to its content.
+/// A scoped view is the recommended way to use a ``ViewScope/ViewScope``. It creates a new scope, binds the scope to its own visibility lifecycle, and makes the scope available to its content.
 /// Tasks assigned to the scope are cancelled when the `ScopedView` disappears.
 ///
 /// For example:
@@ -100,7 +100,7 @@ import SwiftUI
 ///
 /// struct ChildThatNeedsAScope: View {
 ///
-///     @Binding var scope: VisibilityScope
+///     @Binding var scope: ViewScope
 ///
 ///     var body: some View { ... }
 ///
@@ -109,12 +109,11 @@ import SwiftUI
 ///
 /// ### Starting Work When a View Appears
 ///
-/// The scope becomes active when the scoped view appears. Tasks assigned before then are ignored, which includes tasks assigned from the `onAppear` action of a child view.
-/// To start work when a view appears, use SwiftUI's own `task` modifier instead.
+/// The scope becomes active when the scoped view appears. Tasks assigned before then, for example from the `onAppear` action of a child view, are held and start as soon as the scope becomes active.
 ///
 /// ### Managing a Scope Manually
 ///
-/// If you need more control over how a scope is created and bound, use the ``ViewScope`` property wrapper and the ``SwiftUICore/View/viewScope(_:)`` modifier.
+/// If you need more control over how a scope is created and bound, use the ``Scope`` property wrapper and the ``SwiftUICore/View/scope(to:)`` modifier.
 @available(macOS 15.0, macCatalyst 18.0, iOS 18.0, watchOS 11.0, tvOS 18.0, visionOS 2.0, *)
 public struct ScopedView<T>: View where T: View {
 
@@ -136,7 +135,7 @@ public struct ScopedView<T>: View where T: View {
     ///
     /// - Parameter content: A view builder that receives a binding to the view's scope and produces the content of the view. The scope is also available to the content using the ``CurrentScope`` property wrapper.
     public init(
-        @ViewBuilder content: @escaping @MainActor (Binding<VisibilityScope>) -> T
+        @ViewBuilder content: @escaping @MainActor (Binding<ViewScope>) -> T
     ) {
         self.content = content
     }
@@ -145,14 +144,14 @@ public struct ScopedView<T>: View where T: View {
 
     public var body: some View {
         content($scope)
-            .viewScope($scope)
+            .scope(to: $scope)
     }
 
     // MARK: - Private
 
-    private let content: @MainActor (Binding<VisibilityScope>) -> T
+    private let content: @MainActor (Binding<ViewScope>) -> T
 
-    @ViewScope
+    @Scope
     private var scope
 
 }

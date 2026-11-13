@@ -1,5 +1,5 @@
 // ViewScope
-// WhileVisible.swift
+// Modifier.swift
 //
 // MIT License
 //
@@ -30,23 +30,50 @@ extension View {
 
     /// Manage the tasks assigned to the provided scope based on the appearance lifecycle of the upstream view.
     ///
+    /// Use this modifier to bind a scope that you created yourself using the ``Scope`` property wrapper. You do not need this modifier when using ``ScopedView``, which binds its scope for you.
+    ///
+    /// The scope is also made available to the upstream view and its descendants using the ``CurrentScope`` property wrapper.
+    ///
+    /// For example:
+    ///
+    /// ```swift
+    /// struct SomeView: View {
+    ///
+    ///     @Scope var myScope
+    ///
+    ///     var body: some View {
+    ///         SomeOtherView()
+    ///             .scope(to: $myScope)
+    ///             // Tasks assigned to `myScope` will cancel themselves when `SomeOtherView` disappears.
+    ///     }
+    ///
+    /// }
+    /// ```
+    ///
     /// - Parameter scope: The scope to manage
     /// - Returns: The modified view
-    @available(*, deprecated, renamed: "viewScope(_:)")
-    public func whileVisible(
-        _ scope: Binding<VisibilityScope>
+    public func scope(
+        to scope: Binding<ViewScope>
     ) -> some View {
-        viewScope(scope)
+        modifier(ScopeModifier(scope))
     }
 
 }
 
 @available(macOS 15.0, macCatalyst 18.0, iOS 18.0, watchOS 11.0, tvOS 18.0, visionOS 2.0, *)
-private struct WhileVisible: ViewModifier {
+extension EnvironmentValues {
+
+    @Entry
+    var currentScope: Binding<ViewScope>? = nil
+
+}
+
+@available(macOS 15.0, macCatalyst 18.0, iOS 18.0, watchOS 11.0, tvOS 18.0, visionOS 2.0, *)
+private struct ScopeModifier: ViewModifier {
 
     // MARK: - Initializers
 
-    init(_ scope: Binding<VisibilityScope>) {
+    init(_ scope: Binding<ViewScope>) {
         _scope = scope
     }
 
@@ -54,6 +81,10 @@ private struct WhileVisible: ViewModifier {
 
     func body(content: Content) -> some View {
         content
+            .environment(
+                \.currentScope,
+                $scope
+            )
             .onAppear {
                 scope.activate()
             }
@@ -65,6 +96,6 @@ private struct WhileVisible: ViewModifier {
     // MARK: - Private
 
     @Binding
-    private var scope: VisibilityScope
+    private var scope: ViewScope
 
 }
