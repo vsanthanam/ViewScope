@@ -4,7 +4,7 @@
 
 ### Adding Tasks
 
-- ``task(priority:fileID:line:operation:)``
-- ``task(id:priority:fileID:line:operation:)``
-- ``task(executorPreference:priority:fileID:line:operation:)``
-- ``task(id:executorPreference:priority:fileID:line:operation:)``
+- ``task(priority:file:function:line:column:operation:)``
+- ``task(id:priority:file:function:line:column:operation:)``
+- ``task(executorPreference:priority:file:function:line:column:operation:)``
+- ``task(id:executorPreference:priority:file:function:line:column:operation:)``

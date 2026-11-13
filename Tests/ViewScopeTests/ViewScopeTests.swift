@@ -95,54 +95,14 @@ struct ViewScopeTests {
     }
 
     @Test
-    func tasksAttachedBeforeBindingStartOnceBound() async {
+    func tasksAreIgnoredBeforeBinding() async {
         let recorder = Recorder()
         var scope = ViewScope()
         scope.task { await recorder.run() }
+        scope.task(id: "id") { await recorder.run() }
+        scope.activate()
         await settle()
         #expect(recorder.started == 0)
-        scope.activate()
-        #expect(await eventually { recorder.started == 1 })
-        scope.deactivate()
-        #expect(await eventually { recorder.cancelled == 1 })
-    }
-
-    @Test
-    func tasksAttachedBeforeBindingWithExecutorPreferenceStartOnceBound() async {
-        let recorder = Recorder()
-        var scope = ViewScope()
-        scope.task(executorPreference: nil) { await recorder.run() }
-        scope.task(id: "id", executorPreference: nil) { await recorder.run() }
-        await settle()
-        #expect(recorder.started == 0)
-        scope.activate()
-        #expect(await eventually { recorder.started == 2 })
-        scope.deactivate()
-        #expect(await eventually { recorder.cancelled == 2 })
-    }
-
-    @Test
-    func tasksAttachedBeforeBindingNeverStartIfTheScopeIsDiscarded() async {
-        let recorder = Recorder()
-        do {
-            var scope = ViewScope()
-            scope.task { await recorder.run() }
-        }
-        await settle()
-        #expect(recorder.started == 0)
-    }
-
-    @Test
-    func replacedTasksAttachedBeforeBindingNeverStart() async {
-        let first = Recorder()
-        let second = Recorder()
-        var scope = ViewScope()
-        scope.task(id: "id") { await first.run() }
-        scope.task(id: "id") { await second.run() }
-        scope.activate()
-        #expect(await eventually { second.started == 1 })
-        await settle()
-        #expect(first.started == 0)
         scope.deactivate()
     }
 
