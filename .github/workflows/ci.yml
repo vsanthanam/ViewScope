@@ -57,7 +57,7 @@ jobs:
             xcode: "26.5"
           - swift: "6.4"
             runner: "xcode-27"
-            xcode: "27.1"
+            xcode: "27.2"
     runs-on: ${{ matrix.runner }}
     outputs:
       artifact-name: macos-build
@@ -91,7 +91,7 @@ jobs:
             xcode: "26.5"
           - swift: "6.4"
             runner: "xcode-27"
-            xcode: "27.1"
+            xcode: "27.2"
     needs: build-macos-spm
     runs-on: ${{ matrix.runner }}
     steps:
