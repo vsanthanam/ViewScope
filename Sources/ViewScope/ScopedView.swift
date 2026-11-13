@@ -109,7 +109,8 @@ import SwiftUI
 ///
 /// ### Starting Work When a View Appears
 ///
-/// The scope becomes active when the scoped view appears. Tasks assigned before then, for example from the `onAppear` action of a child view, are held and start as soon as the scope becomes active.
+/// The scope becomes active when the scoped view appears. Tasks assigned before then are ignored, which includes tasks assigned from the `onAppear` action of a child view. In debug builds, an ignored task reports a runtime issue in Xcode.
+/// To start work when a view appears, use SwiftUI's own `task` modifier instead.
 ///
 /// ### Managing a Scope Manually
 ///

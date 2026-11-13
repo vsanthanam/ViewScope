@@ -24,7 +24,6 @@
 // SOFTWARE.
 
 import SwiftUI
-import Synchronization
 
 /// A view scope is a type that provides an async context that is cancelled based on the visibility lifecycle of one or more attached views.
 ///
@@ -61,9 +60,7 @@ import Synchronization
 /// Like `Task`, an operation inherits the actor isolation of the context that it is created in, unless you provide an executor preference.
 ///
 /// When none of the views bound to the scope are visible, any tasks managed by the scope are cancelled.
-/// Tasks that are added to the scope after its bound views have disappeared are ignored.
-///
-/// Tasks that are added to the scope before it has been bound to a view, for example when a child view appears, are held and start as soon as the scope is bound.
+/// Tasks that are added to the scope when no bound views are visible are ignored. In debug builds, an ignored task reports a runtime issue in Xcode.
 ///
 /// ### Preventing Duplicate Tasks
 ///
@@ -95,7 +92,7 @@ import Synchronization
 /// }
 /// ```
 ///
-/// - Important: Tasks added to a scope that is never bound to a view do not start. In debug builds, a task that is still waiting for its scope to be bound after a short time reports a runtime issue in Xcode.
+/// - Important: Tasks added to a scope that is not bound to a visible view are ignored. This includes a scope that you have not yet bound using the ``SwiftUICore/View/scope(to:)`` modifier.
 @available(macOS 15.0, macCatalyst 18.0, iOS 18.0, watchOS 11.0, tvOS 18.0, visionOS 2.0, *)
 public struct ViewScope {
 
@@ -104,69 +101,66 @@ public struct ViewScope {
     /// Attach a task to the scope
     /// - Parameters:
     ///   - priority: The priority of the operation task.
-    ///   - fileID: The file from which the task was attached. Used for runtime diagnostics.
+    ///   - file: The file from which the task was attached. Used for runtime diagnostics.
+    ///   - function: The function from which the task was attached.
     ///   - line: The line from which the task was attached. Used for runtime diagnostics.
+    ///   - column: The column from which the task was attached.
     ///   - operation: The operation to perform.
     public mutating func task(
         priority: TaskPriority = .userInitiated,
-        fileID: StaticString = #fileID,
+        file: StaticString = #fileID,
+        function: StaticString = #function,
         line: UInt = #line,
+        column: UInt = #column,
         @_inheritActorContext @_implicitSelfCapture operation: sending @escaping @isolated(any) () async -> Void
     ) {
-        if bindCount > 0 {
-            enqueue(
-                Task(
-                    priority: priority,
-                    operation: operation
-                )
+        guard bindCount > .zero else {
+            reportIgnoredTask(
+                fileID: file,
+                line: line
             )
-        } else if !hasBeenBound {
-            let activation = activation(fileID: fileID, line: line)
-            enqueue(
-                Task(
-                    priority: priority
-                ) {
-                    guard await activation.first(where: { _ in true }) != nil, !Task.isCancelled else { return }
-                    await operation()
-                }
-            )
+            return
         }
+        enqueue(
+            Task(
+                priority: priority,
+                operation: operation
+            )
+        )
     }
 
     /// Attach a uniquely identified task to the scope
     /// - Parameters:
     ///   - id: A uniqueness identifier. New tasks provided with this identifier will cancel this one.
     ///   - priority: The priority of the operation task.
-    ///   - fileID: The file from which the task was attached. Used for runtime diagnostics.
+    ///   - file: The file from which the task was attached. Used for runtime diagnostics.
+    ///   - function: The function from which the task was attached.
     ///   - line: The line from which the task was attached. Used for runtime diagnostics.
+    ///   - column: The column from which the task was attached.
     ///   - operation: The operation to perform.
     public mutating func task(
         id: some Hashable,
         priority: TaskPriority = .userInitiated,
-        fileID: StaticString = #fileID,
+        file: StaticString = #fileID,
+        function: StaticString = #function,
         line: UInt = #line,
+        column: UInt = #column,
         @_inheritActorContext @_implicitSelfCapture operation: sending @escaping @isolated(any) () async -> Void
     ) {
-        if bindCount > 0 {
-            enqueue(
-                Task(
-                    priority: priority,
-                    operation: operation
-                ),
-                with: id
+        guard bindCount > .zero else {
+            reportIgnoredTask(
+                fileID: file,
+                line: line
             )
-        } else if !hasBeenBound {
-            let activation = activation(fileID: fileID, line: line)
-            enqueue(
-                Task(
-                    priority: priority
-                ) {
-                    guard await activation.first(where: { _ in true }) != nil, !Task.isCancelled else { return }
-                    await operation()
-                },
-                with: id
-            )
+            return
         }
+        enqueue(
+            Task(
+                priority: priority,
+                operation: operation
+            ),
+            with: id
+        )
     }
 
     /// Attach a task to the scope
@@ -175,36 +169,34 @@ public struct ViewScope {
     ///   Explicitly passing `nil` as the executor preference is equivalent to no preference, and effectively means to inherit the outer context’s executor preference.
     ///   You can also pass the `globalConcurrentExecutor` global executor explicitly.
     ///   - priority: The priority of the operation task.
-    ///   - fileID: The file from which the task was attached. Used for runtime diagnostics.
+    ///   - file: The file from which the task was attached. Used for runtime diagnostics.
+    ///   - function: The function from which the task was attached.
     ///   - line: The line from which the task was attached. Used for runtime diagnostics.
+    ///   - column: The column from which the task was attached.
     ///   - operation: The operation to perform.
     public mutating func task(
         executorPreference taskExecutor: (any TaskExecutor)?,
         priority: TaskPriority = .userInitiated,
-        fileID: StaticString = #fileID,
+        file: StaticString = #fileID,
+        function: StaticString = #function,
         line: UInt = #line,
+        column: UInt = #column,
         operation: sending @escaping () async -> Void
     ) {
-        if bindCount > 0 {
-            enqueue(
-                Task(
-                    executorPreference: taskExecutor,
-                    priority: priority,
-                    operation: operation
-                )
+        guard bindCount > .zero else {
+            reportIgnoredTask(
+                fileID: file,
+                line: line
             )
-        } else if !hasBeenBound {
-            let activation = activation(fileID: fileID, line: line)
-            enqueue(
-                Task(
-                    executorPreference: taskExecutor,
-                    priority: priority
-                ) {
-                    guard await activation.first(where: { _ in true }) != nil, !Task.isCancelled else { return }
-                    await operation()
-                }
-            )
+            return
         }
+        enqueue(
+            Task(
+                executorPreference: taskExecutor,
+                priority: priority,
+                operation: operation
+            )
+        )
     }
 
     /// Attach a uniquely identified task to the scope
@@ -214,39 +206,36 @@ public struct ViewScope {
     ///   Explicitly passing `nil` as the executor preference is equivalent to no preference, and effectively means to inherit the outer context’s executor preference.
     ///   You can also pass the `globalConcurrentExecutor` global executor explicitly.
     ///   - priority: The priority of the operation task.
-    ///   - fileID: The file from which the task was attached. Used for runtime diagnostics.
+    ///   - file: The file from which the task was attached. Used for runtime diagnostics.
+    ///   - function: The function from which the task was attached.
     ///   - line: The line from which the task was attached. Used for runtime diagnostics.
+    ///   - column: The column from which the task was attached.
     ///   - operation: The operation to perform.
     public mutating func task(
         id: some Hashable,
         executorPreference taskExecutor: (any TaskExecutor)?,
         priority: TaskPriority = .userInitiated,
-        fileID: StaticString = #fileID,
+        file: StaticString = #fileID,
+        function: StaticString = #function,
         line: UInt = #line,
+        column: UInt = #column,
         operation: sending @escaping () async -> Void
     ) {
-        if bindCount > 0 {
-            enqueue(
-                Task(
-                    executorPreference: taskExecutor,
-                    priority: priority,
-                    operation: operation
-                ),
-                with: id
+        guard bindCount > .zero else {
+            reportIgnoredTask(
+                fileID: file,
+                line: line
             )
-        } else if !hasBeenBound {
-            let activation = activation(fileID: fileID, line: line)
-            enqueue(
-                Task(
-                    executorPreference: taskExecutor,
-                    priority: priority
-                ) {
-                    guard await activation.first(where: { _ in true }) != nil, !Task.isCancelled else { return }
-                    await operation()
-                },
-                with: id
-            )
+            return
         }
+        enqueue(
+            Task(
+                executorPreference: taskExecutor,
+                priority: priority,
+                operation: operation
+            ),
+            with: id
+        )
     }
 
     // MARK: - Private
@@ -254,9 +243,7 @@ public struct ViewScope {
     init() {}
 
     mutating func activate() {
-        hasBeenBound = true
         bindCount += 1
-        gate.open()
     }
 
     mutating func deactivate() {
@@ -265,14 +252,12 @@ public struct ViewScope {
 
     private var tasks: [Task<Void, Never>] = []
     private var keyed: [AnyHashable: Task<Void, Never>] = [:]
-    private var hasBeenBound = false
-    private let gate = ActivationGate()
-    private var bindCount: Int = 0 {
+    private var bindCount: Int = .zero {
         didSet {
             flush()
-            if bindCount < 0 {
+            if bindCount < .zero {
                 assertionFailure("Bind count has decremented below zero. This should never happen!")
-                bindCount = 0
+                bindCount = .zero
             }
         }
     }
@@ -291,22 +276,19 @@ public struct ViewScope {
         keyed[id] = task
     }
 
-    private func activation(
+    private func reportIgnoredTask(
         fileID: StaticString,
         line: UInt
-    ) -> AsyncStream<Void> {
-        #if DEBUG
-            Task { [weak gate] in
-                try? await Task.sleep(for: .seconds(1))
-                guard let gate, !gate.isOpen else { return }
-                runtimeIssue(
-                    "A task was attached to a ViewScope that has not been bound to a view, so it has not started. Bind the scope using the scope(to:) modifier, or use ScopedView.",
-                    fileID: fileID,
-                    line: line
-                )
-            }
-        #endif
-        return gate.activation()
+    ) {
+        runtimeIssue(
+            """
+            A task was attached to a ViewScope that is not bound to a visible view, so it was ignored.
+            Tasks can only be attached while a view that the scope is bound to is visible.
+            Bind the scope using a `ScopedView` or the `scope(to:)` modifier.
+            """,
+            fileID: fileID,
+            line: line
+        )
     }
 
     private mutating func flush() {
@@ -329,19 +311,25 @@ extension Binding where Value == ViewScope {
     /// Attach a task to the scope
     /// - Parameters:
     ///   - priority: The priority of the operation task.
-    ///   - fileID: The file from which the task was attached. Used for runtime diagnostics.
+    ///   - file: The file from which the task was attached. Used for runtime diagnostics.
+    ///   - function: The function from which the task was attached.
     ///   - line: The line from which the task was attached. Used for runtime diagnostics.
+    ///   - column: The column from which the task was attached.
     ///   - operation: The operation to perform.
     public func task(
         priority: TaskPriority = .userInitiated,
-        fileID: StaticString = #fileID,
+        file: StaticString = #fileID,
+        function: StaticString = #function,
         line: UInt = #line,
+        column: UInt = #column,
         @_inheritActorContext @_implicitSelfCapture operation: sending @escaping @isolated(any) () async -> Void
     ) {
         wrappedValue.task(
             priority: priority,
-            fileID: fileID,
+            file: file,
+            function: function,
             line: line,
+            column: column,
             operation: operation
         )
     }
@@ -350,21 +338,27 @@ extension Binding where Value == ViewScope {
     /// - Parameters:
     ///   - id: A uniqueness identifier. New tasks provided with this identifier will cancel this one.
     ///   - priority: The priority of the operation task.
-    ///   - fileID: The file from which the task was attached. Used for runtime diagnostics.
+    ///   - file: The file from which the task was attached. Used for runtime diagnostics.
+    ///   - function: The function from which the task was attached.
     ///   - line: The line from which the task was attached. Used for runtime diagnostics.
+    ///   - column: The column from which the task was attached.
     ///   - operation: The operation to perform.
     public func task(
         id: some Hashable,
         priority: TaskPriority = .userInitiated,
-        fileID: StaticString = #fileID,
+        file: StaticString = #fileID,
+        function: StaticString = #function,
         line: UInt = #line,
+        column: UInt = #column,
         @_inheritActorContext @_implicitSelfCapture operation: sending @escaping @isolated(any) () async -> Void
     ) {
         wrappedValue.task(
             id: id,
             priority: priority,
-            fileID: fileID,
+            file: file,
+            function: function,
             line: line,
+            column: column,
             operation: operation
         )
     }
@@ -375,21 +369,27 @@ extension Binding where Value == ViewScope {
     ///   Explicitly passing `nil` as the executor preference is equivalent to no preference, and effectively means to inherit the outer context’s executor preference.
     ///   You can also pass the `globalConcurrentExecutor` global executor explicitly.
     ///   - priority: The priority of the operation task.
-    ///   - fileID: The file from which the task was attached. Used for runtime diagnostics.
+    ///   - file: The file from which the task was attached. Used for runtime diagnostics.
+    ///   - function: The function from which the task was attached.
     ///   - line: The line from which the task was attached. Used for runtime diagnostics.
+    ///   - column: The column from which the task was attached.
     ///   - operation: The operation to perform.
     public func task(
         executorPreference taskExecutor: (any TaskExecutor)?,
         priority: TaskPriority = .userInitiated,
-        fileID: StaticString = #fileID,
+        file: StaticString = #fileID,
+        function: StaticString = #function,
         line: UInt = #line,
+        column: UInt = #column,
         operation: sending @escaping () async -> Void
     ) {
         wrappedValue.task(
             executorPreference: taskExecutor,
             priority: priority,
-            fileID: fileID,
+            file: file,
+            function: function,
             line: line,
+            column: column,
             operation: operation
         )
     }
@@ -401,88 +401,31 @@ extension Binding where Value == ViewScope {
     ///   Explicitly passing `nil` as the executor preference is equivalent to no preference, and effectively means to inherit the outer context’s executor preference.
     ///   You can also pass the `globalConcurrentExecutor` global executor explicitly.
     ///   - priority: The priority of the operation task.
-    ///   - fileID: The file from which the task was attached. Used for runtime diagnostics.
+    ///   - file: The file from which the task was attached. Used for runtime diagnostics.
+    ///   - function: The function from which the task was attached.
     ///   - line: The line from which the task was attached. Used for runtime diagnostics.
+    ///   - column: The column from which the task was attached.
     ///   - operation: The operation to perform.
     public func task(
         id: some Hashable,
         executorPreference taskExecutor: (any TaskExecutor)?,
         priority: TaskPriority = .userInitiated,
-        fileID: StaticString = #fileID,
+        file: StaticString = #fileID,
+        function: StaticString = #function,
         line: UInt = #line,
+        column: UInt = #column,
         operation: sending @escaping () async -> Void
     ) {
         wrappedValue.task(
             id: id,
             executorPreference: taskExecutor,
             priority: priority,
-            fileID: fileID,
+            file: file,
+            function: function,
             line: line,
+            column: column,
             operation: operation
         )
-    }
-
-}
-
-/// A gate that holds tasks attached to a scope before the scope is first bound to a view.
-@available(macOS 15.0, macCatalyst 18.0, iOS 18.0, watchOS 11.0, tvOS 18.0, visionOS 2.0, *)
-final class ActivationGate: Sendable {
-
-    // MARK: - API
-
-    /// Whether or not the gate has been opened
-    var isOpen: Bool {
-        state.withLock { state in
-            state.isOpen
-        }
-    }
-
-    /// Open the gate, releasing every pending activation
-    func open() {
-        let pending = state.withLock { state in
-            state.isOpen = true
-            let pending = state.pending
-            state.pending = []
-            return pending
-        }
-        for continuation in pending {
-            continuation.yield()
-            continuation.finish()
-        }
-    }
-
-    /// Create a stream that yields a single value once the gate opens, or finishes without yielding a value if the gate is discarded before it opens.
-    func activation() -> AsyncStream<Void> {
-        let (stream, continuation) = AsyncStream<Void>.makeStream()
-        let isOpen = state.withLock { state in
-            if !state.isOpen {
-                state.pending.append(continuation)
-            }
-            return state.isOpen
-        }
-        if isOpen {
-            continuation.yield()
-            continuation.finish()
-        }
-        return stream
-    }
-
-    // MARK: - Private
-
-    private struct State {
-        var isOpen = false
-        var pending: [AsyncStream<Void>.Continuation] = []
-    }
-
-    private let state = Mutex(State())
-
-    deinit {
-        let pending = state.withLock { state in
-            state.pending
-        }
-        for continuation in pending {
-            continuation.finish()
-        }
     }
 
 }

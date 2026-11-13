@@ -56,7 +56,7 @@ import SwiftUI
 /// }
 /// ```
 ///
-/// - Important: Tasks assigned to a scope that is never bound to a view do not start. In debug builds, a task that is still waiting for its scope to be bound after a short time reports a runtime issue in Xcode.
+/// - Important: Tasks assigned to a scope that is not bound to a visible view are ignored. In debug builds, an ignored task reports a runtime issue in Xcode.
 ///
 /// To pass a scope to a child view, use a SwiftUI binding. The property wrapper supports this using projection. For example:
 ///
